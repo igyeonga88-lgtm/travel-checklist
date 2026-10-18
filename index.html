@@ -1,7 +1,49 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#17685e"><title>영종에서의 3일</title>
 <style>
-:root{font-family:system-ui,-apple-system,sans-serif;color:#193d39;background:#f5f6f0;line-height:1.5}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0}button,input,select{font:inherit}button{cursor:pointer;border:1px solid #cddbd3;background:white;color:#234a43;border-radius:10px;padding:9px 13px;min-height:44px}button:hover{background:#e4efe8}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #da8a3c;outline-offset:2px}.primary{background:#17685e;color:white;border-color:#17685e}.danger{color:#a43d38}header{background:#dfece4;padding:40px 24px 32px;border-bottom:1px solid #cadcd0}.wrap{max-width:1000px;margin:auto}.eyebrow{letter-spacing:3px;font-size:12px;font-weight:700;color:#477768}h1{font-size:clamp(30px,6vw,48px);letter-spacing:-2px;margin:10px 0}h2{font-size:21px;margin:0}p{margin:8px 0}.muted{color:#62756d;font-size:14px}.toolbar,.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.toolbar{margin-top:20px}.save{margin-left:auto;font-size:13px}nav{display:flex;gap:8px;padding:20px 0;position:sticky;top:0;background:#f5f6f0;z-index:2}nav button{flex:1}nav button[aria-selected=true]{background:#17685e;color:white;border-color:#17685e}main{padding:0 20px 48px}.intro{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:10px 0 20px}.card{background:#fff;border:1px solid #dce4da;border-radius:18px;margin:14px 0;overflow:hidden;box-shadow:0 3px 12px #16372b05}.cardhead{padding:14px 18px;background:#edf2e9;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.title{font-weight:700;font-size:17px;flex:1}.cardbody{padding:4px 18px 16px}.item{display:flex;align-items:center;gap:10px;border-bottom:1px solid #edf0e9;padding:13px 0}.item:last-of-type{border-bottom:0}.content{flex:1;min-width:0;overflow-wrap:anywhere}.content strong{display:block}.checked .content strong{text-decoration:line-through;color:#7b8b81}.actions{display:flex;gap:4px;flex-wrap:wrap}.actions button{padding:5px 9px;font-size:13px}.check{width:23px;height:23px;accent-color:#17685e;flex-shrink:0}.add{margin-top:12px;width:100%;border-style:dashed;background:#fafbf7}.empty{padding:25px 0;color:#718176;text-align:center}.badge{font-size:12px;background:#dceadd;border-radius:20px;padding:3px 9px}.progress{height:7px;background:#c7dacb;border-radius:8px;margin-top:18px;overflow:hidden}.progress span{display:block;background:#17685e;height:100%;transition:width .2s}dialog{border:0;border-radius:20px;padding:24px;width:min(92vw,460px);box-shadow:0 20px 80px #102f3640}dialog::backdrop{background:#17352e77}form label{display:block;margin:16px 0;font-weight:600}input:not([type=checkbox]),select{display:block;width:100%;margin-top:6px;padding:12px;border:1px solid #bdcec1;border-radius:9px;background:white;color:#193d39}dialog h2{margin-bottom:20px}form .row{justify-content:flex-end}.notice{padding:12px 16px;border-radius:12px;background:#fff1dc;margin:12px 0;font-size:14px}footer{text-align:center;font-size:12px;color:#718176;margin-top:30px}@media(max-width:600px){header{padding:28px 20px 24px}.item{flex-wrap:wrap}.actions{margin-left:auto}.item>.actions{width:100%;justify-content:flex-end}.cardhead{padding:12px}.cardbody{padding:4px 12px 14px}.save{width:100%;margin-left:0}.toolbar button{flex:1}.intro{align-items:flex-start}nav{gap:5px}nav button{padding:10px 5px;font-size:14px}}
+:root{font-family:system-ui,-apple-system,sans-serif;color:#193d39;background:#f5f6f0;line-height:1.5}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0}button,input,select{font:inherit}button{cursor:pointer;border:1px solid #cddbd3;background:white;color:#234a43;border-radius:10px;padding:9px 13px;min-height:44px}button:hover{background:#e4efe8}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #da8a3c;outline-offset:2px}.primary{background:#17685e;color:white;border-color:#17685e}.danger{color:#a43d38}header{background:#dfece4;padding:40px 24px 32px;border-bottom:1px solid #cadcd0}.wrap{max-width:1000px;margin:auto}.eyebrow{letter-spacing:3px;font-size:12px;font-weight:700;color:#477768}h1{font-size:clamp(30px,6vw,48px);letter-spacing:-2px;margin:10px 0}h2{font-size:21px;margin:0}p{margin:8px 0}.muted{color:#62756d;font-size:14px}.toolbar,.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.toolbar{margin-top:20px}.save{margin-left:auto;font-size:13px}nav{display:flex;gap:8px;padding:20px 0;position:sticky;top:0;background:#f5f6f0;z-index:2}nav button{flex:1}nav button[aria-selected=true]{background:#17685e;color:white;border-color:#17685e}main{padding:0 20px 48px}.intro{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:10px 0 20px}.card{background:#fff;border:1px solid #dce4da;border-radius:18px;margin:14px 0;overflow:hidden;box-shadow:0 3px 12px #16372b05}.cardhead{padding:14px 18px;background:#edf2e9;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.title{font-weight:700;font-size:17px;flex:1}.cardbody{padding:4px 18px 16px}.item{display:flex;align-items:center;gap:10px;border-bottom:1px solid #edf0e9;padding:13px 0}.item:last-of-type{border-bottom:0}.content{flex:1;min-width:0;overflow-wrap:anywhere}.content strong{display:block}.checked .content strong{text-decoration:line-through;color:#7b8b81}.actions{display:flex;gap:4px;flex-wrap:wrap}.actions button{padding:5px 9px;font-size:13px}.check{width:23px;height:23px;accent-color:#17685e;flex-shrink:0}.add{margin-top:12px;width:100%;border-style:dashed;background:#fafbf7}.empty{padding:25px 0;color:#718176;text-align:center}.badge{font-size:12px;background:#dceadd;border-radius:20px;padding:3px 9px}.progress{height:7px;background:#c7dacb;border-radius:8px;margin-top:18px;overflow:hidden}.progress span{display:block;background:#17685e;height:100%;transition:width .2s}dialog{border:0;border-radius:20px;padding:24px;width:min(92vw,460px);box-shadow:0 20px 80px #102f3640}dialog::backdrop{background:#17352e77}form label{display:block;margin:16px 0;font-weight:600}input:not([type=checkbox]),select{display:block;width:100%;margin-top:6px;padding:12px;border:1px solid #bdcec1;border-radius:9px;background:white;color:#193d39}dialog h2{margin-bottom:20px}form .row{justify-content:flex-end}.notice{padding:12px 16px;border-radius:12px;background:#fff1dc;margin:12px 0;font-size:14px}footer{text-align:center;font-size:12px;color:#718176;margin-top:30px}
+/* Reserve space for titles; management controls must never squeeze Korean text. */
+.title{min-width:140px;overflow-wrap:anywhere;word-break:keep-all;line-height:1.5}
+button{touch-action:manipulation}
+button:disabled{opacity:.38;cursor:default}
+@media(max-width:700px){
+  header{padding:28px 16px 22px}
+  main{padding:0 12px 36px}
+  h1{letter-spacing:-1px}
+  nav{position:static;gap:6px;padding:16px 0;margin-bottom:8px}
+  nav button{min-width:0;padding:12px 4px;font-size:15px;font-weight:650;white-space:nowrap}
+  .intro{display:block;margin:8px 4px 20px}
+  .intro h2{font-size:21px;line-height:1.5;word-break:keep-all}
+  .intro p{font-size:15px;line-height:1.7;word-break:keep-all}
+  .intro>button{margin-top:8px;width:100%;font-size:15px}
+  .card{margin:16px 0;border-radius:16px}
+  .cardhead{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px 10px;padding:16px}
+  .cardhead>button{width:44px;padding:6px;font-size:22px}
+  .title{min-width:0;font-size:18px;line-height:1.55;letter-spacing:-.3px}
+  .badge{white-space:nowrap;padding:5px 9px;font-size:13px}
+  .cardhead>.actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px;margin:0;padding-top:12px;border-top:1px solid #d7e2d3}
+  .cardhead>.actions button{flex:1;min-width:44px;font-size:14px;padding:8px}
+  .cardbody{padding:0 16px 16px}
+  .item{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;padding:16px 0}
+  .check{width:26px;height:26px;margin:0;align-self:start;cursor:pointer}
+  .content{font-size:16px;line-height:1.65}
+  .content strong{font-weight:600;word-break:keep-all}
+  .content .muted{font-size:14px;line-height:1.65}
+  .item>.actions{grid-column:2;display:flex;gap:6px;justify-content:flex-end;margin:2px 0 0}
+  .item>.actions button{min-width:44px;padding:8px 10px;font-size:14px}
+  .add{font-size:15px;padding:12px}
+  .save{width:100%;margin:4px 0 0}
+  .toolbar button{flex:1;font-size:15px}
+  footer{line-height:1.8;padding:0 8px}
+}
+@media(max-width:340px){
+  .cardhead{padding:12px;column-gap:8px}
+  .cardbody{padding-left:12px;padding-right:12px}
+  .title{font-size:17px}
+  .item>.actions{grid-column:1/-1}
+  nav button{font-size:14px}
+}
+
 </style></head><body>
 <header><div class="wrap"><div class="eyebrow">YEONGJONG · 2 NIGHTS / 3 DAYS</div><h1>영종에서의 3일 🌿</h1><p>바다 옆에서 쉬어가는 시간, 준비부터 마지막 일정까지.</p><div class="toolbar"><button id="backup">↓ 백업 저장</button><button id="restore">↑ 백업 복원</button><input id="file" type="file" accept="application/json,.json" hidden><span class="save" id="save" role="status" aria-live="polite">자동 저장 준비 중</span></div><div class="progress"><span id="bar"></span></div><p class="muted" id="summary"></p></div></header>
 <main class="wrap"><div id="warning" role="alert"></div><nav role="tablist" aria-label="여행 관리"><button role="tab" data-tab="packing">✓ 준비물</button><button role="tab" data-tab="places">⌖ 장소 후보</button><button role="tab" data-tab="days">▦ 3일 일정</button></nav><section id="view"></section><footer>이 브라우저에 자동 저장됩니다 · 기기 이동 및 사이트 주소 변경 전에는 백업해 주세요.</footer></main>
