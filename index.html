@@ -11,10 +11,931 @@
 const KEY='yeongjong-travel-checklist', VERSION=1;
 const $=s=>document.querySelector(s), uid=()=>globalThis.crypto?.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2);
 const group=(name,items=[])=>({id:uid(),name,collapsed:false,items:items.map(name=>({id:uid(),name,done:false}))});
-const defaults=()=>({version:VERSION,packing:[group('기본 준비물',['신분증 · 운전면허증','충전기 · 보조배터리','세면도구 · 상비약']),group('차크닉 준비',['피크닉 매트 · 캠핑 의자','담요 · 가벼운 겉옷','간식 · 물 · 쓰레기봉투'])],places:[group('차크닉 장소'),group('카페'),group('맛집')],days:[group('1일차 · 도착과 바다'),group('2일차 · 느긋한 영종도'),group('3일차 · 마지막 산책')]});
-function validate(d){if(!d||typeof d!=='object'||d.version!==VERSION)throw Error('지원하지 않는 백업 버전입니다.');for(const key of ['packing','places','days']){if(!Array.isArray(d[key])||d[key].length>200||(key==='days'&&d[key].length!==3))throw Error('여행 데이터 형식이 올바르지 않습니다.');const ids=new Set;for(const g of d[key]){if(!g||typeof g.id!=='string'||ids.has(g.id)||typeof g.name!=='string'||!g.name.trim()||g.name.length>200||!Array.isArray(g.items)||g.items.length>2000)throw Error('카테고리 데이터가 올바르지 않습니다.');ids.add(g.id);const itemIds=new Set;for(const i of g.items){if(!i||typeof i.id!=='string'||itemIds.has(i.id)||typeof i.name!=='string'||!i.name.trim()||i.name.length>200||typeof i.done!=='boolean'||['note','time','url'].some(k=>i[k]!==undefined&&(typeof i[k]!=='string'||i[k].length>2000)))throw Error('항목 데이터가 올바르지 않습니다.');itemIds.add(i.id);}if(g.collapsed!==undefined&&typeof g.collapsed!=='boolean')throw Error('접기 상태가 올바르지 않습니다.');}}return d;}
+// Catalog IDs are permanent: never renumber/reuse IDs when editing or retiring defaults.
+const PACKING_DEFAULTS=[
+  {
+    "id": "packing-essentials",
+    "name": "필수품·귀중품",
+    "items": [
+      {
+        "id": "packing-essentials-01",
+        "name": "신분증"
+      },
+      {
+        "id": "packing-essentials-02",
+        "name": "운전면허증"
+      },
+      {
+        "id": "packing-essentials-03",
+        "name": "신용카드"
+      },
+      {
+        "id": "packing-essentials-04",
+        "name": "체크카드"
+      },
+      {
+        "id": "packing-essentials-05",
+        "name": "현금"
+      },
+      {
+        "id": "packing-essentials-06",
+        "name": "지갑"
+      },
+      {
+        "id": "packing-essentials-07",
+        "name": "자동차 키"
+      },
+      {
+        "id": "packing-essentials-08",
+        "name": "집 열쇠"
+      },
+      {
+        "id": "packing-essentials-09",
+        "name": "숙소 예약 내역"
+      },
+      {
+        "id": "packing-essentials-10",
+        "name": "여행 일정 확인"
+      },
+      {
+        "id": "packing-essentials-11",
+        "name": "비상 연락처"
+      }
+    ]
+  },
+  {
+    "id": "packing-clothing",
+    "name": "의류·패션",
+    "items": [
+      {
+        "id": "packing-clothing-01",
+        "name": "속옷 3세트"
+      },
+      {
+        "id": "packing-clothing-02",
+        "name": "양말 3켤레"
+      },
+      {
+        "id": "packing-clothing-03",
+        "name": "잠옷"
+      },
+      {
+        "id": "packing-clothing-04",
+        "name": "첫째 날 상의"
+      },
+      {
+        "id": "packing-clothing-05",
+        "name": "첫째 날 하의"
+      },
+      {
+        "id": "packing-clothing-06",
+        "name": "둘째 날 상의"
+      },
+      {
+        "id": "packing-clothing-07",
+        "name": "둘째 날 하의"
+      },
+      {
+        "id": "packing-clothing-08",
+        "name": "셋째 날 상의"
+      },
+      {
+        "id": "packing-clothing-09",
+        "name": "셋째 날 하의"
+      },
+      {
+        "id": "packing-clothing-10",
+        "name": "가디건"
+      },
+      {
+        "id": "packing-clothing-11",
+        "name": "바람막이"
+      },
+      {
+        "id": "packing-clothing-12",
+        "name": "두꺼운 겉옷"
+      },
+      {
+        "id": "packing-clothing-13",
+        "name": "편한 신발"
+      },
+      {
+        "id": "packing-clothing-14",
+        "name": "여분 신발"
+      },
+      {
+        "id": "packing-clothing-15",
+        "name": "모자"
+      },
+      {
+        "id": "packing-clothing-16",
+        "name": "선글라스"
+      },
+      {
+        "id": "packing-clothing-17",
+        "name": "벨트"
+      },
+      {
+        "id": "packing-clothing-18",
+        "name": "액세서리"
+      },
+      {
+        "id": "packing-clothing-19",
+        "name": "세탁물 보관 봉투"
+      }
+    ]
+  },
+  {
+    "id": "packing-hygiene",
+    "name": "세면·위생",
+    "items": [
+      {
+        "id": "packing-hygiene-01",
+        "name": "칫솔"
+      },
+      {
+        "id": "packing-hygiene-02",
+        "name": "치약"
+      },
+      {
+        "id": "packing-hygiene-03",
+        "name": "치실"
+      },
+      {
+        "id": "packing-hygiene-04",
+        "name": "구강청결제"
+      },
+      {
+        "id": "packing-hygiene-05",
+        "name": "클렌징폼"
+      },
+      {
+        "id": "packing-hygiene-06",
+        "name": "클렌징오일"
+      },
+      {
+        "id": "packing-hygiene-07",
+        "name": "샴푸"
+      },
+      {
+        "id": "packing-hygiene-08",
+        "name": "트리트먼트"
+      },
+      {
+        "id": "packing-hygiene-09",
+        "name": "바디워시"
+      },
+      {
+        "id": "packing-hygiene-10",
+        "name": "바디로션"
+      },
+      {
+        "id": "packing-hygiene-11",
+        "name": "수건"
+      },
+      {
+        "id": "packing-hygiene-12",
+        "name": "샤워타월"
+      },
+      {
+        "id": "packing-hygiene-13",
+        "name": "면봉"
+      },
+      {
+        "id": "packing-hygiene-14",
+        "name": "화장솜"
+      },
+      {
+        "id": "packing-hygiene-15",
+        "name": "휴지"
+      },
+      {
+        "id": "packing-hygiene-16",
+        "name": "물티슈"
+      },
+      {
+        "id": "packing-hygiene-17",
+        "name": "손소독제"
+      },
+      {
+        "id": "packing-hygiene-18",
+        "name": "생리용품"
+      },
+      {
+        "id": "packing-hygiene-19",
+        "name": "면도기"
+      },
+      {
+        "id": "packing-hygiene-20",
+        "name": "데오드란트"
+      },
+      {
+        "id": "packing-hygiene-21",
+        "name": "렌즈"
+      },
+      {
+        "id": "packing-hygiene-22",
+        "name": "렌즈 세척액"
+      },
+      {
+        "id": "packing-hygiene-23",
+        "name": "렌즈 케이스"
+      },
+      {
+        "id": "packing-hygiene-24",
+        "name": "안경"
+      }
+    ]
+  },
+  {
+    "id": "packing-makeup",
+    "name": "스킨케어·메이크업",
+    "items": [
+      {
+        "id": "packing-makeup-01",
+        "name": "토너"
+      },
+      {
+        "id": "packing-makeup-02",
+        "name": "세럼"
+      },
+      {
+        "id": "packing-makeup-03",
+        "name": "수분크림"
+      },
+      {
+        "id": "packing-makeup-04",
+        "name": "선크림"
+      },
+      {
+        "id": "packing-makeup-05",
+        "name": "립밤"
+      },
+      {
+        "id": "packing-makeup-06",
+        "name": "쿠션·파운데이션"
+      },
+      {
+        "id": "packing-makeup-07",
+        "name": "컨실러"
+      },
+      {
+        "id": "packing-makeup-08",
+        "name": "파우더"
+      },
+      {
+        "id": "packing-makeup-09",
+        "name": "아이브로우"
+      },
+      {
+        "id": "packing-makeup-10",
+        "name": "아이섀도"
+      },
+      {
+        "id": "packing-makeup-11",
+        "name": "아이라이너"
+      },
+      {
+        "id": "packing-makeup-12",
+        "name": "마스카라"
+      },
+      {
+        "id": "packing-makeup-13",
+        "name": "블러셔"
+      },
+      {
+        "id": "packing-makeup-14",
+        "name": "립제품"
+      },
+      {
+        "id": "packing-makeup-15",
+        "name": "메이크업 브러시"
+      },
+      {
+        "id": "packing-makeup-16",
+        "name": "퍼프"
+      },
+      {
+        "id": "packing-makeup-17",
+        "name": "화장거울"
+      },
+      {
+        "id": "packing-makeup-18",
+        "name": "화장품 파우치"
+      },
+      {
+        "id": "packing-makeup-19",
+        "name": "클렌징 티슈"
+      }
+    ]
+  },
+  {
+    "id": "packing-hair",
+    "name": "헤어·뷰티",
+    "items": [
+      {
+        "id": "packing-hair-01",
+        "name": "빗"
+      },
+      {
+        "id": "packing-hair-02",
+        "name": "헤어브러시"
+      },
+      {
+        "id": "packing-hair-03",
+        "name": "헤어드라이어"
+      },
+      {
+        "id": "packing-hair-04",
+        "name": "고데기"
+      },
+      {
+        "id": "packing-hair-05",
+        "name": "헤어에센스"
+      },
+      {
+        "id": "packing-hair-06",
+        "name": "헤어오일"
+      },
+      {
+        "id": "packing-hair-07",
+        "name": "헤어스프레이"
+      },
+      {
+        "id": "packing-hair-08",
+        "name": "머리끈"
+      },
+      {
+        "id": "packing-hair-09",
+        "name": "집게핀"
+      },
+      {
+        "id": "packing-hair-10",
+        "name": "헤어핀"
+      },
+      {
+        "id": "packing-hair-11",
+        "name": "손톱깎이"
+      },
+      {
+        "id": "packing-hair-12",
+        "name": "핸드크림"
+      }
+    ]
+  },
+  {
+    "id": "packing-electronics",
+    "name": "전자기기",
+    "items": [
+      {
+        "id": "packing-electronics-01",
+        "name": "스마트폰"
+      },
+      {
+        "id": "packing-electronics-02",
+        "name": "휴대폰 충전 케이블"
+      },
+      {
+        "id": "packing-electronics-03",
+        "name": "고속 충전기"
+      },
+      {
+        "id": "packing-electronics-04",
+        "name": "보조배터리"
+      },
+      {
+        "id": "packing-electronics-05",
+        "name": "차량용 충전기"
+      },
+      {
+        "id": "packing-electronics-06",
+        "name": "차량용 충전 케이블"
+      },
+      {
+        "id": "packing-electronics-07",
+        "name": "멀티탭"
+      },
+      {
+        "id": "packing-electronics-08",
+        "name": "USB-C 케이블"
+      },
+      {
+        "id": "packing-electronics-09",
+        "name": "블루투스 이어폰"
+      },
+      {
+        "id": "packing-electronics-10",
+        "name": "이어폰 충전 케이스"
+      },
+      {
+        "id": "packing-electronics-11",
+        "name": "JBL Flip 7 블루투스 스피커"
+      },
+      {
+        "id": "packing-electronics-12",
+        "name": "JBL 스피커 충전 케이블"
+      },
+      {
+        "id": "packing-electronics-13",
+        "name": "태블릿"
+      },
+      {
+        "id": "packing-electronics-14",
+        "name": "태블릿 충전기"
+      },
+      {
+        "id": "packing-electronics-15",
+        "name": "삼각대"
+      },
+      {
+        "id": "packing-electronics-16",
+        "name": "셀카봉"
+      },
+      {
+        "id": "packing-electronics-17",
+        "name": "휴대폰 거치대"
+      },
+      {
+        "id": "packing-electronics-18",
+        "name": "카메라"
+      },
+      {
+        "id": "packing-electronics-19",
+        "name": "여분 저장장치"
+      }
+    ]
+  },
+  {
+    "id": "packing-carpicnic",
+    "name": "차량 내부 차크닉",
+    "items": [
+      {
+        "id": "packing-carpicnic-01",
+        "name": "차박 매트"
+      },
+      {
+        "id": "packing-carpicnic-02",
+        "name": "트렁크 매트"
+      },
+      {
+        "id": "packing-carpicnic-03",
+        "name": "차량용 쿠션"
+      },
+      {
+        "id": "packing-carpicnic-04",
+        "name": "등받이 쿠션"
+      },
+      {
+        "id": "packing-carpicnic-05",
+        "name": "담요"
+      },
+      {
+        "id": "packing-carpicnic-06",
+        "name": "무릎담요"
+      },
+      {
+        "id": "packing-carpicnic-07",
+        "name": "차량용 테이블"
+      },
+      {
+        "id": "packing-carpicnic-08",
+        "name": "차량용 랜턴"
+      },
+      {
+        "id": "packing-carpicnic-09",
+        "name": "차량용 조명"
+      },
+      {
+        "id": "packing-carpicnic-10",
+        "name": "창문 가리개"
+      },
+      {
+        "id": "packing-carpicnic-11",
+        "name": "햇빛가리개"
+      },
+      {
+        "id": "packing-carpicnic-12",
+        "name": "차량용 휴지통"
+      },
+      {
+        "id": "packing-carpicnic-13",
+        "name": "차량용 수납함"
+      },
+      {
+        "id": "packing-carpicnic-14",
+        "name": "차량용 방향제"
+      },
+      {
+        "id": "packing-carpicnic-15",
+        "name": "차량용 선풍기"
+      },
+      {
+        "id": "packing-carpicnic-16",
+        "name": "방석"
+      }
+    ]
+  },
+  {
+    "id": "packing-outdoor",
+    "name": "야외 차크닉·캠핑",
+    "items": [
+      {
+        "id": "packing-outdoor-01",
+        "name": "접이식 캠핑 의자"
+      },
+      {
+        "id": "packing-outdoor-02",
+        "name": "높이 조절 테이블"
+      },
+      {
+        "id": "packing-outdoor-03",
+        "name": "피크닉 매트"
+      },
+      {
+        "id": "packing-outdoor-04",
+        "name": "방수 돗자리"
+      },
+      {
+        "id": "packing-outdoor-05",
+        "name": "캠핑 랜턴"
+      },
+      {
+        "id": "packing-outdoor-06",
+        "name": "랜턴 충전기"
+      },
+      {
+        "id": "packing-outdoor-07",
+        "name": "보조 조명"
+      },
+      {
+        "id": "packing-outdoor-08",
+        "name": "보냉백"
+      },
+      {
+        "id": "packing-outdoor-09",
+        "name": "아이스팩"
+      },
+      {
+        "id": "packing-outdoor-10",
+        "name": "텀블러"
+      },
+      {
+        "id": "packing-outdoor-11",
+        "name": "머그컵"
+      },
+      {
+        "id": "packing-outdoor-12",
+        "name": "접시"
+      },
+      {
+        "id": "packing-outdoor-13",
+        "name": "수저"
+      },
+      {
+        "id": "packing-outdoor-14",
+        "name": "포크"
+      },
+      {
+        "id": "packing-outdoor-15",
+        "name": "젓가락"
+      },
+      {
+        "id": "packing-outdoor-16",
+        "name": "컵"
+      },
+      {
+        "id": "packing-outdoor-17",
+        "name": "키친타월"
+      },
+      {
+        "id": "packing-outdoor-18",
+        "name": "지퍼백"
+      },
+      {
+        "id": "packing-outdoor-19",
+        "name": "비닐봉투"
+      },
+      {
+        "id": "packing-outdoor-20",
+        "name": "쓰레기봉투"
+      },
+      {
+        "id": "packing-outdoor-21",
+        "name": "휴대용 티슈"
+      },
+      {
+        "id": "packing-outdoor-22",
+        "name": "물티슈"
+      },
+      {
+        "id": "packing-outdoor-23",
+        "name": "작은 수납가방"
+      },
+      {
+        "id": "packing-outdoor-24",
+        "name": "우산"
+      }
+    ]
+  },
+  {
+    "id": "packing-food",
+    "name": "음식·간식·음료",
+    "items": [
+      {
+        "id": "packing-food-01",
+        "name": "생수"
+      },
+      {
+        "id": "packing-food-02",
+        "name": "얼음"
+      },
+      {
+        "id": "packing-food-03",
+        "name": "커피"
+      },
+      {
+        "id": "packing-food-04",
+        "name": "차"
+      },
+      {
+        "id": "packing-food-05",
+        "name": "탄산음료"
+      },
+      {
+        "id": "packing-food-06",
+        "name": "과일"
+      },
+      {
+        "id": "packing-food-07",
+        "name": "과자"
+      },
+      {
+        "id": "packing-food-08",
+        "name": "초콜릿"
+      },
+      {
+        "id": "packing-food-09",
+        "name": "견과류"
+      },
+      {
+        "id": "packing-food-10",
+        "name": "샌드위치"
+      },
+      {
+        "id": "packing-food-11",
+        "name": "김밥"
+      },
+      {
+        "id": "packing-food-12",
+        "name": "간편식"
+      },
+      {
+        "id": "packing-food-13",
+        "name": "컵라면"
+      },
+      {
+        "id": "packing-food-14",
+        "name": "빵"
+      },
+      {
+        "id": "packing-food-15",
+        "name": "일회용 컵"
+      },
+      {
+        "id": "packing-food-16",
+        "name": "일회용 식기"
+      },
+      {
+        "id": "packing-food-17",
+        "name": "음식 보관 용기"
+      }
+    ]
+  },
+  {
+    "id": "packing-health",
+    "name": "건강·비상용품",
+    "items": [
+      {
+        "id": "packing-health-01",
+        "name": "평소 복용약"
+      },
+      {
+        "id": "packing-health-02",
+        "name": "소화제"
+      },
+      {
+        "id": "packing-health-03",
+        "name": "진통제"
+      },
+      {
+        "id": "packing-health-04",
+        "name": "밴드"
+      },
+      {
+        "id": "packing-health-05",
+        "name": "소독용품"
+      },
+      {
+        "id": "packing-health-06",
+        "name": "멀미약"
+      },
+      {
+        "id": "packing-health-07",
+        "name": "인공눈물"
+      },
+      {
+        "id": "packing-health-08",
+        "name": "마스크"
+      },
+      {
+        "id": "packing-health-09",
+        "name": "벌레 기피제"
+      },
+      {
+        "id": "packing-health-10",
+        "name": "벌레 물림 연고"
+      },
+      {
+        "id": "packing-health-11",
+        "name": "핫팩"
+      },
+      {
+        "id": "packing-health-12",
+        "name": "파스"
+      },
+      {
+        "id": "packing-health-13",
+        "name": "작은 구급 파우치"
+      }
+    ]
+  },
+  {
+    "id": "packing-driving",
+    "name": "차량 점검·운전",
+    "items": [
+      {
+        "id": "packing-driving-01",
+        "name": "주유"
+      },
+      {
+        "id": "packing-driving-02",
+        "name": "타이어 공기압 확인"
+      },
+      {
+        "id": "packing-driving-03",
+        "name": "타이어 상태 확인"
+      },
+      {
+        "id": "packing-driving-04",
+        "name": "엔진오일 확인"
+      },
+      {
+        "id": "packing-driving-05",
+        "name": "냉각수 확인"
+      },
+      {
+        "id": "packing-driving-06",
+        "name": "워셔액 확인"
+      },
+      {
+        "id": "packing-driving-07",
+        "name": "와이퍼 확인"
+      },
+      {
+        "id": "packing-driving-08",
+        "name": "전조등 확인"
+      },
+      {
+        "id": "packing-driving-09",
+        "name": "브레이크등 확인"
+      },
+      {
+        "id": "packing-driving-10",
+        "name": "블랙박스 확인"
+      },
+      {
+        "id": "packing-driving-11",
+        "name": "내비게이션 목적지 설정"
+      },
+      {
+        "id": "packing-driving-12",
+        "name": "하이패스 카드 확인"
+      },
+      {
+        "id": "packing-driving-13",
+        "name": "차량 내부 청소"
+      },
+      {
+        "id": "packing-driving-14",
+        "name": "트렁크 정리"
+      },
+      {
+        "id": "packing-driving-15",
+        "name": "주차장 위치 확인"
+      },
+      {
+        "id": "packing-driving-16",
+        "name": "차량 보험 긴급출동 연락처 확인"
+      }
+    ]
+  },
+  {
+    "id": "packing-departure",
+    "name": "출발 전 최종 확인",
+    "items": [
+      {
+        "id": "packing-departure-01",
+        "name": "숙소 체크인 시간"
+      },
+      {
+        "id": "packing-departure-02",
+        "name": "숙소 주차 가능 여부"
+      },
+      {
+        "id": "packing-departure-03",
+        "name": "날씨 확인"
+      },
+      {
+        "id": "packing-departure-04",
+        "name": "일몰 시간 확인"
+      },
+      {
+        "id": "packing-departure-05",
+        "name": "차크닉 장소 확인"
+      },
+      {
+        "id": "packing-departure-06",
+        "name": "휴대폰 완충"
+      },
+      {
+        "id": "packing-departure-07",
+        "name": "보조배터리 완충"
+      },
+      {
+        "id": "packing-departure-08",
+        "name": "JBL 스피커 완충"
+      },
+      {
+        "id": "packing-departure-09",
+        "name": "쓰레기 정리용 봉투 확인"
+      },
+      {
+        "id": "packing-departure-10",
+        "name": "냉장고 확인"
+      },
+      {
+        "id": "packing-departure-11",
+        "name": "가스 확인"
+      },
+      {
+        "id": "packing-departure-12",
+        "name": "전등 확인"
+      },
+      {
+        "id": "packing-departure-13",
+        "name": "창문 잠금"
+      },
+      {
+        "id": "packing-departure-14",
+        "name": "현관문 잠금"
+      }
+    ]
+  }
+];
+// Seen IDs survive edits/deletion and travel with JSON backups. Missing seen entries
+// are user deletions; only genuinely new catalog IDs may be appended.
+function migrate(d,catalog=PACKING_DEFAULTS){
+  const history=d.packingDefaults||(d.packingDefaults={groups:[],items:[]});
+  const seenGroups=new Set(history.groups),seenItems=new Set(history.items);
+  const allItems=d.packing.flatMap(g=>g.items);
+  const claimed=new Set(history.items);
+  for(const template of catalog){
+    let target=d.packing.find(g=>g.id===template.id);
+    if(!seenGroups.has(template.id)){
+      target=target||d.packing.find(g=>g.name===template.name);
+      if(target){ // Retain the group position and all user settings; bind its stable catalog ID.
+        target.id=template.id;
+      }else{target={id:template.id,name:template.name,collapsed:false,items:[]};d.packing.push(target);}
+      seenGroups.add(template.id);
+    }
+    for(const item of template.items){
+      if(seenItems.has(item.id))continue;
+      // Match exact legacy names once; never split or reinterpret combined/renamed items.
+      const existing=allItems.find(i=>i.id===item.id)||
+        (target?.items.find(i=>!claimed.has(i.id)&&i.name===item.name))||
+        allItems.find(i=>!claimed.has(i.id)&&i.name===item.name);
+      if(existing){claimed.add(existing.id);existing.id=item.id;claimed.add(item.id);}
+      else if(target)target.items.push({id:item.id,name:item.name,done:false});
+      seenItems.add(item.id);
+    }
+  }
+  history.groups=[...seenGroups];history.items=[...seenItems];
+  return d;
+}
+const defaults=()=>migrate({version:VERSION,packing:[],places:[group('차크닉 장소'),group('카페'),group('맛집')],days:[group('1일차 · 도착과 바다'),group('2일차 · 느긋한 영종도'),group('3일차 · 마지막 산책')]});
+function validate(d){if(!d||typeof d!=='object'||d.version!==VERSION)throw Error('지원하지 않는 백업 버전입니다.');if(d.packingDefaults!==undefined){const h=d.packingDefaults;if(!h||!['groups','items'].every(k=>Array.isArray(h[k])&&h[k].length<=10000&&h[k].every(id=>typeof id==='string'&&id.length<=200)))throw Error('기본 목록 이력이 올바르지 않습니다.');}for(const key of ['packing','places','days']){if(!Array.isArray(d[key])||d[key].length>200||(key==='days'&&d[key].length!==3))throw Error('여행 데이터 형식이 올바르지 않습니다.');const ids=new Set;for(const g of d[key]){if(!g||typeof g.id!=='string'||ids.has(g.id)||typeof g.name!=='string'||!g.name.trim()||g.name.length>200||!Array.isArray(g.items)||g.items.length>2000)throw Error('카테고리 데이터가 올바르지 않습니다.');ids.add(g.id);const itemIds=new Set;for(const i of g.items){if(!i||typeof i.id!=='string'||itemIds.has(i.id)||typeof i.name!=='string'||!i.name.trim()||i.name.length>200||typeof i.done!=='boolean'||['note','time','url'].some(k=>i[k]!==undefined&&(typeof i[k]!=='string'||i[k].length>2000)))throw Error('항목 데이터가 올바르지 않습니다.');itemIds.add(i.id);}if(g.collapsed!==undefined&&typeof g.collapsed!=='boolean')throw Error('접기 상태가 올바르지 않습니다.');}}return d;}
 let state,tab='packing',pending=null,storageBlocked=false;
-try{const raw=localStorage.getItem(KEY);state=raw?validate(JSON.parse(raw)):defaults();}catch(e){state=defaults();storageBlocked=true;$('#warning').innerHTML='<p class="notice">저장 데이터를 읽을 수 없어 자동 저장을 중단했습니다. 기존 데이터는 덮어쓰지 않습니다. 백업 파일을 복원하거나 현재 내용을 백업해 보관해 주세요.</p>';}
+try{const raw=localStorage.getItem(KEY);state=raw?migrate(validate(JSON.parse(raw))):defaults();}catch(e){state=defaults();storageBlocked=true;$('#warning').innerHTML='<p class="notice">저장 데이터를 읽을 수 없어 자동 저장을 중단했습니다. 기존 데이터는 덮어쓰지 않습니다. 백업 파일을 복원하거나 현재 내용을 백업해 보관해 주세요.</p>';}
 function persist(){if(storageBlocked){$('#save').textContent='자동 저장 중단 · 백업 필요';return;}try{localStorage.setItem(KEY,JSON.stringify(state));$('#save').textContent='자동 저장됨 · '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});}catch(e){$('#save').textContent='저장 실패 · 백업해 주세요';$('#warning').textContent='브라우저 저장 공간이나 권한을 확인하세요. 현재 데이터는 백업 버튼으로 보관할 수 있습니다.';}}
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const btn=(action,label,extra='',disabled=false)=>`<button type="button" data-action="${action}" ${extra} ${disabled?'disabled':''}>${label}</button>`;
@@ -26,7 +947,7 @@ $('#view').addEventListener('click',e=>{const b=e.target.closest('[data-action]'
 document.querySelector('nav').onclick=e=>{if(e.target.dataset.tab){tab=e.target.dataset.tab;render();}};
 document.querySelector('nav').onkeydown=e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();const tabs=['packing','places','days'];tab=tabs[(tabs.indexOf(tab)+(e.key==='ArrowRight'?1:2))%3];render();document.querySelector('[data-tab="'+tab+'"]').focus();};
 $('#backup').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='영종도-여행-백업-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-$('#restore').onclick=()=>$('#file').click();$('#file').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>5*1024*1024)throw Error('5MB 이하의 백업 파일을 선택하세요.');const next=validate(JSON.parse(await file.text()));if(!confirm('현재 데이터를 백업 파일로 교체할까요? 필요한 경우 먼저 백업을 저장하세요.'))return;localStorage.setItem(KEY,JSON.stringify(next));state=next;storageBlocked=false;$('#warning').textContent='';persist();render();}catch(err){alert('복원하지 못했습니다: '+err.message);}finally{e.target.value='';}};
-window.addEventListener('storage',e=>{if(e.key!==KEY||!e.newValue)return;try{state=validate(JSON.parse(e.newValue));render();$('#save').textContent='다른 탭의 변경을 반영했습니다';}catch{ $('#save').textContent='다른 탭의 데이터를 읽지 못했습니다';}});
+$('#restore').onclick=()=>$('#file').click();$('#file').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>5*1024*1024)throw Error('5MB 이하의 백업 파일을 선택하세요.');const next=migrate(validate(JSON.parse(await file.text())));if(!confirm('현재 데이터를 백업 파일로 교체할까요? 필요한 경우 먼저 백업을 저장하세요.'))return;localStorage.setItem(KEY,JSON.stringify(next));state=next;storageBlocked=false;$('#warning').textContent='';persist();render();}catch(err){alert('복원하지 못했습니다: '+err.message);}finally{e.target.value='';}};
+window.addEventListener('storage',e=>{if(e.key!==KEY||!e.newValue)return;try{state=migrate(validate(JSON.parse(e.newValue)));render();$('#save').textContent='다른 탭의 변경을 반영했습니다';}catch{ $('#save').textContent='다른 탭의 데이터를 읽지 못했습니다';}});
 render();persist();
 </script></body></html>
